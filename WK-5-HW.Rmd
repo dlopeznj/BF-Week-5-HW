@@ -1,0 +1,144 @@
+---
+title: "BF HW Week 5"
+output: html_document
+date: "2022-10-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(fpp)
+library(fpp2)
+
+head(a10)
+plot(a10)
+
+STL_A10 = stl(a10,"periodic")
+plot(STL_A10)
+attributes(STL_A10)
+
+## Trend is consistent, there is definitely seasonality, C+I bordering on a pattern but looks random enough to continue. Looks to be additive
+
+seasadj(STL_A10)
+plot(a10)
+lines(seasadj(STL_A10),col='green')
+
+## Looks to be consistent with tren graph in decomp
+
+FSTL = forecast(STL_A10)
+plot(FSTL)
+
+## Interesting that the forecast jumps from the current spot. Would think it would use that as the start
+
+FSTL = forecast(STL_A10)
+plot(FSTL)
+FSTL = forecast(STL_A10,h=20)
+plot(FSTL)
+FSTL = forecast(STL_A10,h=5)
+plot(FSTL)
+FSTL = forecast(STL_A10,h=48)
+plot(FSTL)
+FSTL = forecast(STL_A10)
+plot(FSTL)
+
+## Looking at different forecast horizons and watching the confidence interval grow. Reset back to standard
+
+decomp_a10 = decompose(a10)
+plot(decomp_a10)
+decomp_a10
+
+## Confirmed findings from STL decomp as additive. Trend is consistent. Definite seasonality. C+I looks to have a pattern early on but breaks away.
+
+plot(a10)
+lines(seasadj(decomp_a10),col='Red')
+lines(seasadj(STL_A10),col='green')
+
+## Decomp seasonal adjustment looks to be more accurate that the STL decomp adj
+
+plot(decomp_a10)
+win_a10 = window(a10,start = 2000)
+plot(win_a10)
+
+## Decided to bifurcate the data as the first 9 years had a slight pattern to the C+I
+
+STL_WA10 = stl(win_a10,"periodic")
+plot(STL_WA10)
+
+## Now the the C+I is completely irregular, seasonality still there and trend consistent.I think this will make for a better forecast.
+
+seasadj(STL_WA10)
+plot(win_a10)
+lines(seasadj(STL_WA10),col='purple')
+
+## Looks like the best seasonal adjusted graph yet
+
+FSTLWA10 = forecast(STL_WA10)
+plot(FSTLWA10)
+
+decWA10 = decompose(win_a10)
+decWA10
+plot(decWA10)
+
+#Trying a new dataset
+
+head(wmurders)
+plot(wmurders)
+attributes(wmurders)
+
+## stl_WMdecomp = stl(wmurders,s.window = "periodic") results in an error saying that the seiers is no periodic or has less than two periods. 
+
+tswmurders = ts(wmurders,1,,1)
+plot(tswmurders)
+
+
+## stl_WMdecomp = stl(tswmurders,s.window = "periodic") still resulted in the same error. Will ask in class
+
+head(euretail)
+plot(euretail)
+
+stl_euretail = stl(euretail,s.window = 'periodic')
+plot(stl_euretail)
+
+## When reading the name of the data set being EU RETAIL i assumed there would be a large seasonal component. In the initial graph of the data however I didn't see any seasonality with the naked eye. Now that i decompose it i see a VERY consistent seasonal component. Lesson learned.Trend looks good and no pattern in the C+I.
+
+
+attributes(stl_euretail)
+seasadj(stl_euretail)
+
+plot(euretail)
+lines(seasadj(stl_euretail),col='red')
+
+## Very smooth line when adjusted for seasonality
+
+FEURETAIl = forecast(stl_euretail)
+plot(FEURETAIl)
+
+## Very large confidence interval. Forecast unlikely.
+
+decompose(euretail)
+plot(decompose(euretail))
+
+plot(euretail)
+w_euretail = window(euretail,1996,2005)
+plot(w_euretail)
+
+## Taking out the section of data on the downturn. 
+
+## I want to see the forecast vs actual in a vaccuum. I am taking 1996 to 2001 then ill over lay the results with 2002 to 2005.
+
+w_euretail = window(euretail,1996,2001)
+plot(w_euretail)
+w_euretail2 = window(euretail,2002,2005)
+plot(w_euretail2)
+
+f_w_euretail = forecast(w_euretail)
+plot(f_w_euretail)
+
+## Getting a straight line for the forecast. Interesting issue. Will bring up in class
+
+```
+
